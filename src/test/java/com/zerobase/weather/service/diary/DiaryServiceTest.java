@@ -1,30 +1,25 @@
 package com.zerobase.weather.service.diary;
 
+import com.zerobase.weather.config.AcceptanceTest;
 import com.zerobase.weather.domain.diary.Diary;
 import com.zerobase.weather.dto.diary.DiaryDto;
 import com.zerobase.weather.exception.ArgumentException;
 import com.zerobase.weather.repository.diary.DiaryRepository;
-import com.zerobase.weather.type.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
 import static com.zerobase.weather.type.ErrorCode.*;
-import static com.zerobase.weather.type.ErrorCode.FUTURE_DATE_NOT_ALLOWED;
-import static com.zerobase.weather.type.ErrorCode.INVALID_DATE_RANGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest
-@Transactional
+@AcceptanceTest
 public class DiaryServiceTest {
 
     @Autowired
@@ -50,7 +45,6 @@ public class DiaryServiceTest {
         assertThat(diaryDto.getWeather()).isNotNull();
         assertThat(diaryDto.getIcon()).isNotNull();
         assertThat(diaryDto.getTemperature()).isNotNull();
-
     }
 
     @Test
@@ -181,22 +175,22 @@ public class DiaryServiceTest {
     @DisplayName("해당 날짜의 첫번째 일기 글을 새로 받아온 일기글로 수정해야 한다")
     public void updateDiary() throws Exception {
         //given
-        LocalDate localDate = LocalDate.of(2022,05,23);
+        LocalDate localDate = LocalDate.of(2022, 05, 23);
         String textForUpdate = "재밌다";
 
         Diary diary1 = createDiaryBy(localDate, "맑음", "icon1", 222.1, "와1");
         Diary diary2 = createDiaryBy(localDate, "흐림", "icon2", 222.2, "와2");
         Diary diary3 = createDiaryBy(localDate, "좋음", "icon3", 222.3, "와3");
         List<Diary> diaries = Arrays.asList(diary1, diary2, diary3);
-        diaryRepository.saveAll(diaries);
+        Diary savedDiary = diaryRepository.saveAll(diaries).get(0);
 
         //when
         DiaryDto updatedDiary = diaryService.updateOldestTextBy(localDate, textForUpdate);
 
         //then
         assertThat(updatedDiary)
-                .extracting("id","weather","icon","temperature","text")
-                .contains(1L, "맑음", "icon1", 222.1, textForUpdate);
+                .extracting("id", "weather", "icon", "temperature", "text", "date")
+                .contains(savedDiary.getId(), "맑음", "icon1", 222.1, textForUpdate, localDate);
 
     }
 
@@ -213,7 +207,7 @@ public class DiaryServiceTest {
         diaryRepository.saveAll(diaries);
 
         //when
-        ArgumentException exception = assertThrows(ArgumentException.class, () -> diaryService.updateOldestTextBy(targetDate,"수정"));
+        ArgumentException exception = assertThrows(ArgumentException.class, () -> diaryService.updateOldestTextBy(targetDate, "수정"));
 
         assertThat(exception)
                 .extracting("errorCode", "errorMessage")
