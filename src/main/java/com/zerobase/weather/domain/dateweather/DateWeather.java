@@ -3,9 +3,11 @@ package com.zerobase.weather.domain.dateweather;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -16,8 +18,11 @@ import static lombok.AccessLevel.PROTECTED;
 public class DateWeather {
     @Id
     private LocalDate date;
+    @NotNull
     private String weather;
+    @NotNull
     private String icon;
+    @NotNull
     private Double temperature;
 
     @Builder
