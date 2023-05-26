@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.time.LocalDate;
 
-import static com.zerobase.weather.type.ErrorCode.FUTURE_DATE_NOT_ALLOWED;
 import static com.zerobase.weather.type.ErrorCode.TYPE_MISS_MATCH;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;

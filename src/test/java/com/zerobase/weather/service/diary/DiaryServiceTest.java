@@ -2,26 +2,17 @@ package com.zerobase.weather.service.diary;
 
 import com.zerobase.weather.dto.diary.DiaryDto;
 import com.zerobase.weather.exception.ArgumentException;
-import com.zerobase.weather.service.diary.DiaryService;
-import com.zerobase.weather.type.ErrorCode;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 import static com.zerobase.weather.type.ErrorCode.FUTURE_DATE_NOT_ALLOWED;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
@@ -35,7 +26,7 @@ public class DiaryServiceTest {
     public void createDiary() throws Exception {
         //given
         String text = "와";
-        LocalDate localDate = LocalDate.of(2022,05,23);
+        LocalDate localDate = LocalDate.of(2022, 05, 23);
 
         //when
         DiaryDto diaryDto = diaryService.createDiary(localDate, text);
