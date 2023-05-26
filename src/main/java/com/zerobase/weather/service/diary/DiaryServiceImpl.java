@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.zerobase.weather.type.ErrorCode.*;
 import static com.zerobase.weather.type.ErrorCode.FUTURE_DATE_NOT_ALLOWED;
 import static com.zerobase.weather.type.ErrorCode.INVALID_DATE_RANGE;
 
@@ -65,6 +66,16 @@ public class DiaryServiceImpl implements DiaryService {
                 .stream().map(DiaryDto::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public DiaryDto updateOldestTextBy(LocalDate localDate, String text) {
+        Diary diary = diaryRepository.getFirstByDate(localDate)
+                .orElseThrow(() -> new ArgumentException(DIARY_DOES_NOT_EXIST));
+        diary.updateText(text);
+        return DiaryDto.fromEntity(diary);
+    }
+
+
 
     private Diary createEntityBy(LocalDate date, String text, DateWeather dateWeather) {
         return Diary
