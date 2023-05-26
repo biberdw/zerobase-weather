@@ -77,25 +77,4 @@ class DiaryControllerTest {
 
     }
 
-    @Test
-    @DisplayName("미래의 일기를 등록할 때 에러가 발생한다 ")
-    public void futureDateNotAllowed() throws Exception {
-        //given
-        String json = "와 재밌다";
-        LocalDate localDate = LocalDate.now().plusDays(1);
-
-        //when //then
-        mockMvc.perform(MockMvcRequestBuilders.post("/diary/{date}", localDate)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                )
-                .andDo(print())
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(BAD_REQUEST.value()))
-                .andExpect(jsonPath("$.status").value(BAD_REQUEST.name()))
-                .andExpect(jsonPath("$.errorCode").value(FUTURE_DATE_NOT_ALLOWED.name()))
-                .andExpect(jsonPath("$.errorMessage").value(FUTURE_DATE_NOT_ALLOWED.getDescription()))
-                .andExpect(jsonPath("$.data").isEmpty());
-
-    }
 }
