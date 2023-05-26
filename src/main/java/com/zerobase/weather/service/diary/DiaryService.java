@@ -14,4 +14,6 @@ public interface DiaryService {
     List<DiaryDto> readDiariesBetween(LocalDate startDate, LocalDate endDate);
 
     DiaryDto updateOldestTextBy(LocalDate localDate, String text);
+
+    int deleteDiariesBy(LocalDate localDate);
 }

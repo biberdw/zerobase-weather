@@ -215,6 +215,30 @@ public class DiaryServiceTest {
 
     }
 
+    @Test
+    @DisplayName("해당 날짜의 모든 일기를 지워야 한다")
+    public void deleteDiary() throws Exception {
+        //given
+        LocalDate localDate = LocalDate.of(2022, 05, 23);
+        LocalDate anotherDate = LocalDate.of(2022, 05, 24);
+
+        Diary diary1 = createDiaryBy(localDate, "맑음", "icon1", 222.1, "와1");
+        Diary diary2 = createDiaryBy(localDate, "흐림", "icon2", 222.2, "와2");
+        Diary diary3 = createDiaryBy(localDate, "좋음", "icon3", 222.3, "와3");
+        Diary diary4 = createDiaryBy(anotherDate, "좋음", "icon3", 222.3, "와4");
+        List<Diary> diaries = Arrays.asList(diary1, diary2, diary3, diary4);
+        diaryRepository.saveAll(diaries);
+
+        //when
+        int deleteLows = diaryService.deleteDiariesBy(localDate);
+
+        //then
+        assertThat(diaryRepository.findAll().size()).isEqualTo(1);
+        assertThat(deleteLows)
+                .isEqualTo(3);
+
+    }
+
     private static Diary createDiaryBy(LocalDate localDate, String weather, String icon, double temperature, String text) {
         return Diary.builder()
                 .weather(weather)

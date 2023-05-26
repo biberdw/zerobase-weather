@@ -1,7 +1,6 @@
 package com.zerobase.weather.repository.diary;
 
 import com.zerobase.weather.domain.diary.Diary;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +10,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 class DiaryRepositoryTest {
@@ -39,8 +37,32 @@ class DiaryRepositoryTest {
         //then
         assertThat(findDiary)
                 .extracting("id","weather","icon","temperature","text")
-                .contains(1L,"맑음","icon1",222.1,"와1");
+                .contains(findDiary.getId(),"맑음","icon1",222.1,"와1");
 
+    }
+
+    @Test
+    @DisplayName("해당 날짜의 모든 일기를 지워야 한다")
+    public void deleteDiariesByDate() throws Exception {
+        //given
+        LocalDate localDate = LocalDate.of(2022,05,23);
+        LocalDate anotherDate = LocalDate.of(2023,05,23);
+
+        Diary diary1 = createDiaryBy(localDate, "맑음", "icon1", 222.1, "와1");
+        Diary diary2 = createDiaryBy(localDate, "흐림", "icon2", 222.2, "와2");
+        Diary diary3 = createDiaryBy(anotherDate,"비", "icon3", 222.3, "와3");
+        List<Diary> diaries = Arrays.asList(diary1, diary2, diary3);
+        diaryRepository.saveAll(diaries);
+
+        //when
+        int deletedRows = diaryRepository.deleteDiariesByDate(localDate);
+
+        List<Diary> findDiaries = diaryRepository.findAll();
+
+        //then
+        assertThat(findDiaries.size()).isEqualTo(1);
+        assertThat(findDiaries.get(0).getWeather()).isEqualTo("비");
+        assertThat(deletedRows).isEqualTo(2);
     }
 
     private static Diary createDiaryBy(LocalDate localDate, String weather, String icon, double temperature, String text) {

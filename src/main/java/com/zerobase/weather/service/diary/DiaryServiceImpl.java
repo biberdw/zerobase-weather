@@ -75,6 +75,10 @@ public class DiaryServiceImpl implements DiaryService {
         return DiaryDto.fromEntity(diary);
     }
 
+    @Transactional
+    public int deleteDiariesBy(LocalDate localDate) {
+        return diaryRepository.deleteDiariesByDate(localDate);
+    }
 
 
     private Diary createEntityBy(LocalDate date, String text, DateWeather dateWeather) {

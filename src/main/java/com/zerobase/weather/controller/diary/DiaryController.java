@@ -1,10 +1,7 @@
 package com.zerobase.weather.controller.diary;
 
 import com.zerobase.weather.dto.ApiResponse;
-import com.zerobase.weather.dto.diary.DiaryDto;
-import com.zerobase.weather.dto.diary.ResponseDiary;
-import com.zerobase.weather.dto.diary.ResponseDiaryBetween;
-import com.zerobase.weather.dto.diary.UpdateOldestDto;
+import com.zerobase.weather.dto.diary.*;
 import com.zerobase.weather.service.diary.DiaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -58,6 +55,15 @@ public class DiaryController {
         return ApiResponse.ok(
                 UpdateOldestDto.Response.of(
                         diaryService.updateOldestTextBy(date, request.getText())
+                )
+        );
+    }
+
+    @DeleteMapping("/{date}")
+    public ApiResponse<DeleteDiaries.Response> deleteDiaries(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+        return ApiResponse.ok(
+                DeleteDiaries.Response.of(
+                diaryService.deleteDiariesBy(date)
                 )
         );
     }

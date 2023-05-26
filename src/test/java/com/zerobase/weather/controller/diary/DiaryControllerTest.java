@@ -26,8 +26,7 @@ import static com.zerobase.weather.type.ErrorCode.TYPE_MISS_MATCH;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -308,6 +307,49 @@ class DiaryControllerTest {
                 .andExpect(jsonPath("$.status").value(BAD_REQUEST.name()))
                 .andExpect(jsonPath("$.errorCode").value(INVALID_REQUEST.name()))
                 .andExpect(jsonPath("$.errorMessage").value("text 필드는 null이 허용되지 않습니다."))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+    }
+
+    @Test
+    @DisplayName("해당 날짜의 모든 일기를 지운다")
+    public void deleteDiaries() throws Exception {
+        //given
+        LocalDate localDate = LocalDate.of(2022, 05, 23);
+
+        given(diaryService.deleteDiariesBy(any()))
+                .willReturn(4);
+
+        //when //then
+        mockMvc.perform(delete(("/diary/{date}"), localDate)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.errorCode").isEmpty())
+                .andExpect(jsonPath("$.errorMessage").isEmpty())
+                .andExpect(jsonPath("$.data.result").value("004개의 일기가 삭제 되었습니다."));
+
+    }
+
+    @Test
+    @DisplayName("해당 날짜의 모든 일기를 지울 때 date 형식을 맞추지 않을 경우 error 가 발생한다")
+    public void deleteDiaries_typeMissMatch() throws Exception {
+        //given
+        String targetDate = "05-20";
+
+        //when //then
+        mockMvc.perform(delete(("/diary/{date}"), targetDate)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.errorCode").value(TYPE_MISS_MATCH.name()))
+                .andExpect(jsonPath("$.errorMessage").value(TYPE_MISS_MATCH.getDescription()))
                 .andExpect(jsonPath("$.data").isEmpty());
 
     }
