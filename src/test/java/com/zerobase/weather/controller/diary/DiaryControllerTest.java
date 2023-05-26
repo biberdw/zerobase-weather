@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zerobase.weather.dto.diary.DiaryDto;
 import com.zerobase.weather.service.diary.DiaryService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -14,6 +16,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import static com.zerobase.weather.type.ErrorCode.TYPE_MISS_MATCH;
@@ -87,7 +90,6 @@ class DiaryControllerTest {
     public void readDiaries() throws Exception {
         //given
         LocalDate localDate = LocalDate.of(2022, 05, 23);
-        String json = "와 재밌다";
 
         DiaryDto diary1 = createDiaryDtoBy(localDate, "맑음", "icon1", 222.1, "와1");
         DiaryDto diary2 = createDiaryDtoBy(localDate, "흐림", "icon2", 222.2, "와2");
@@ -100,8 +102,7 @@ class DiaryControllerTest {
 
         //when //then
         mockMvc.perform(get(("/diary/{date}"), localDate)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
+                        .accept(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -125,7 +126,6 @@ class DiaryControllerTest {
 
         //when //then
         mockMvc.perform(get(("/diary/{date}"), targetDate)
-                        .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
                 .andExpect(status().isBadRequest())
@@ -134,6 +134,82 @@ class DiaryControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(TYPE_MISS_MATCH.name()))
                 .andExpect(jsonPath("$.errorMessage").value(TYPE_MISS_MATCH.getDescription()))
                 .andExpect(jsonPath("$.data").isEmpty());
+
+    }
+
+    @Test
+    @DisplayName("시작값과 종료일안에 포함되는 일기들을 조회한다")
+    public void readDiaries_between() throws Exception {
+        //given
+        LocalDate startDate = LocalDate.of(2022, 05, 23);
+        LocalDate localDate = LocalDate.of(2022, 05, 23);
+        LocalDate endDate = LocalDate.of(2022, 05, 23);
+        String json = "와 재밌다";
+
+        DiaryDto diary1 = createDiaryDtoBy(startDate, "맑음", "icon1", 222.1, "와1");
+        DiaryDto diary2 = createDiaryDtoBy(localDate, "흐림", "icon2", 222.2, "와2");
+        DiaryDto diary3 = createDiaryDtoBy(endDate, "좋음", "icon3", 222.3, "와3");
+
+        List<DiaryDto> diaries = Arrays.asList(diary1, diary2, diary3);
+
+        given(diaryService.readDiariesBetween(any(),any()))
+                .willReturn(diaries);
+
+        //when //then
+        mockMvc.perform(get(("/diary"))
+                        .queryParam("startDate","2022-05-23")
+                        .queryParam("endDate","2022-05-25")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.errorCode").isEmpty())
+                .andExpect(jsonPath("$.errorMessage").isEmpty())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data[0].weather").value("맑음"))
+                .andExpect(jsonPath("$.data[0].icon").value("icon1"))
+                .andExpect(jsonPath("$.data[0].temperature").value(222.1))
+                .andExpect(jsonPath("$.data[0].text").value("와1"))
+                .andExpect(jsonPath("$.data[0].date").value("2022-05-23"));
+
+    }
+
+
+    @DisplayName("일기들을 날짜범위로 조회할때 date 형식을 맞추지 않을 경우 error 가 발생한다")
+    @TestFactory
+    public Collection<DynamicTest> readDiaries_between_typeMissMatch() throws Exception {
+
+        return Arrays.asList(
+                DynamicTest.dynamicTest("시작날짜의 포맷이 일치하지 않은 경우 예외 발생", () ->{
+                    mockMvc.perform(get(("/diary"))
+                                    .queryParam("startDate","05-23")
+                                    .queryParam("endDate","2022-05-25")
+                            )
+                            .andDo(print())
+                            .andExpect(status().isBadRequest())
+                            .andExpect(jsonPath("$.code").value(BAD_REQUEST.value()))
+                            .andExpect(jsonPath("$.status").value(BAD_REQUEST.name()))
+                            .andExpect(jsonPath("$.errorCode").value(TYPE_MISS_MATCH.name()))
+                            .andExpect(jsonPath("$.errorMessage").value(TYPE_MISS_MATCH.getDescription()))
+                            .andExpect(jsonPath("$.data").isEmpty());
+                }),
+                DynamicTest.dynamicTest("종료날짜의 포맷이 일치하지 않은 경우 예외 발생", () ->{
+                    mockMvc.perform(get(("/diary"))
+                                    .queryParam("startDate","2022-05-23")
+                                    .queryParam("endDate","05-25")
+                            )
+                            .andDo(print())
+                            .andExpect(status().isBadRequest())
+                            .andExpect(jsonPath("$.code").value(BAD_REQUEST.value()))
+                            .andExpect(jsonPath("$.status").value(BAD_REQUEST.name()))
+                            .andExpect(jsonPath("$.errorCode").value(TYPE_MISS_MATCH.name()))
+                            .andExpect(jsonPath("$.errorMessage").value(TYPE_MISS_MATCH.getDescription()))
+                            .andExpect(jsonPath("$.data").isEmpty());
+                })
+
+        );
 
     }
 

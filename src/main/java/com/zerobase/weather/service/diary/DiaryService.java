@@ -12,4 +12,5 @@ public interface DiaryService {
     List<DiaryDto> readDiaries(LocalDate localDate);
 
 
+    List<DiaryDto> readDiariesBetween(LocalDate startDate, LocalDate endDate);
 }

@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.zerobase.weather.type.ErrorCode.FUTURE_DATE_NOT_ALLOWED;
+import static com.zerobase.weather.type.ErrorCode.INVALID_DATE_RANGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -109,6 +110,70 @@ public class DiaryServiceTest {
 
     }
 
+    @Test
+    @DisplayName("시작날짜와 종료날짜에 해당하는 일기를 List 형태로 반환해야 한다")
+    public void readDiaries_between() throws Exception {
+        //given
+        LocalDate startDate = LocalDate.of(2022, 05, 23);
+        LocalDate localDate2 = LocalDate.of(2022, 05, 24);
+        LocalDate endDate = LocalDate.of(2022, 05, 25);
+        LocalDate anotherDate = LocalDate.of(2022, 05, 26);
+
+
+        Diary diary1 = createDiaryBy(startDate, "맑음", "icon1", 222.1, "와1");
+        Diary diary2 = createDiaryBy(localDate2, "흐림", "icon2", 222.2, "와2");
+        Diary diary3 = createDiaryBy(endDate, "좋음", "icon3", 222.3, "와3");
+        Diary diary4 = createDiaryBy(anotherDate, "비", "icon4", 222.4, "와4");
+
+        List<Diary> diaries = Arrays.asList(diary1, diary2, diary3, diary4);
+        diaryRepository.saveAll(diaries);
+        //when
+        List<DiaryDto> findDiaries = diaryService.readDiariesBetween(startDate, endDate);
+
+        //then
+        assertEquals(3, findDiaries.size());
+        assertThat(findDiaries)
+                .extracting("weather", "icon", "temperature", "text")
+                .containsExactlyInAnyOrder(
+                        tuple("맑음", "icon1", 222.1, "와1"),
+                        tuple("흐림", "icon2", 222.2, "와2"),
+                        tuple("좋음", "icon3", 222.3, "와3")
+                );
+
+    }
+
+    @Test
+    @DisplayName("일기 범위조회 시 시작값이 미래의 일기값이면 예외가 발생한다")
+    public void readDiaries_between_futureDateNotAllowed() throws Exception {
+        //given
+        LocalDate startDate = LocalDate.now().plusDays(1);
+        LocalDate endDate = LocalDate.now().plusDays(2);
+
+        //when
+        ArgumentException exception = assertThrows(ArgumentException.class, () -> diaryService.readDiariesBetween(startDate, endDate));
+
+        assertThat(exception)
+                .extracting("errorCode", "errorMessage")
+                .contains(FUTURE_DATE_NOT_ALLOWED, FUTURE_DATE_NOT_ALLOWED.getDescription());
+
+    }
+
+    @Test
+    @DisplayName("일기 범위조회 시 시작값이 종료값보다 미래면은 예외가 발생한다")
+    public void readDiaries_between_invalidDateRange() throws Exception {
+        //given
+        LocalDate startDate = LocalDate.of(2022, 05, 23);
+        LocalDate endDate = startDate.minusDays(1);
+
+        //when
+        ArgumentException exception = assertThrows(ArgumentException.class, () -> diaryService.readDiariesBetween(startDate, endDate));
+
+        assertThat(exception)
+                .extracting("errorCode", "errorMessage")
+                .contains(INVALID_DATE_RANGE, INVALID_DATE_RANGE.getDescription());
+
+    }
+
     private static Diary createDiaryBy(LocalDate localDate, String weather, String icon, double temperature, String text) {
         return Diary.builder()
                 .weather(weather)
@@ -118,5 +183,4 @@ public class DiaryServiceTest {
                 .date(localDate)
                 .build();
     }
-
 }

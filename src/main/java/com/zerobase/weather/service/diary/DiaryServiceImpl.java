@@ -6,6 +6,7 @@ import com.zerobase.weather.dto.diary.DiaryDto;
 import com.zerobase.weather.exception.ArgumentException;
 import com.zerobase.weather.repository.diary.DiaryRepository;
 import com.zerobase.weather.service.dateweather.DateWeatherDbOrApiFetcher;
+import com.zerobase.weather.type.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.zerobase.weather.type.ErrorCode.FUTURE_DATE_NOT_ALLOWED;
+import static com.zerobase.weather.type.ErrorCode.INVALID_DATE_RANGE;
 
 @Service
 @Transactional(readOnly = true)
@@ -51,6 +53,19 @@ public class DiaryServiceImpl implements DiaryService {
                 .collect(Collectors.toList());
     }
 
+
+    public List<DiaryDto> readDiariesBetween(LocalDate startDate, LocalDate endDate) {
+        //미래의 일기를 조회하려 할때 예외 발생
+        throwIfFutureDateBy(startDate);
+
+        //시작값이 종료값보다 미래면은 예외 발생
+        throwIfInvalidDateRange(startDate, endDate);
+
+        return diaryRepository.findAllByDateBetween(startDate, endDate)
+                .stream().map(DiaryDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     private Diary createEntityBy(LocalDate date, String text, DateWeather dateWeather) {
         return Diary
                 .builder()
@@ -64,5 +79,9 @@ public class DiaryServiceImpl implements DiaryService {
 
     private static void throwIfFutureDateBy(LocalDate date) {
         if (date.isAfter(LocalDate.now())) throw new ArgumentException(FUTURE_DATE_NOT_ALLOWED);
+    }
+
+    private static void throwIfInvalidDateRange(LocalDate startDate, LocalDate endDate){
+        if(startDate.isAfter(endDate)) throw new ArgumentException(INVALID_DATE_RANGE);
     }
 }
