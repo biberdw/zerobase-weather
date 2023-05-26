@@ -1,0 +1,6 @@
+### createDiary POST
+POST http://localhost:8080/diary/2023-05-27
+Content-Type: application/json
+Accept: application/json
+
+i want to learn spring boot!!!
