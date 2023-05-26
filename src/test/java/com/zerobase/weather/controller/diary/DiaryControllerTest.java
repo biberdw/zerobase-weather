@@ -2,7 +2,9 @@ package com.zerobase.weather.controller.diary;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zerobase.weather.dto.diary.DiaryDto;
+import com.zerobase.weather.dto.diary.UpdateOldestDto;
 import com.zerobase.weather.service.diary.DiaryService;
+import com.zerobase.weather.type.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -19,11 +21,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import static com.zerobase.weather.type.ErrorCode.*;
 import static com.zerobase.weather.type.ErrorCode.TYPE_MISS_MATCH;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -210,6 +214,101 @@ class DiaryControllerTest {
                 })
 
         );
+
+    }
+
+    @Test
+    @DisplayName("해당 날짜의 첫번째 일기 글을 새로 받아온 일기글로 수정한다")
+    public void updateOldestDiary() throws Exception {
+        //given
+        LocalDate localDate = LocalDate.of(2022, 05, 23);
+        String text = "와재밌다";
+
+        UpdateOldestDto.Request request = UpdateOldestDto.Request.builder()
+                .text(text)
+                .build();
+
+        String json = objectMapper.writeValueAsString(request);
+
+        DiaryDto diary1 = createDiaryDtoBy(localDate, "맑음", "icon1", 222.1, text);
+
+        given(diaryService.updateOldestTextBy(any(),any()))
+                .willReturn(diary1);
+
+        //when //then
+        mockMvc.perform(put(("/diary/oldest/{date}"), localDate)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.status").value("OK"))
+                .andExpect(jsonPath("$.errorCode").isEmpty())
+                .andExpect(jsonPath("$.errorMessage").isEmpty())
+                .andExpect(jsonPath("$.data.weather").value("맑음"))
+                .andExpect(jsonPath("$.data.icon").value("icon1"))
+                .andExpect(jsonPath("$.data.temperature").value(222.1))
+                .andExpect(jsonPath("$.data.text").value(text))
+                .andExpect(jsonPath("$.data.date").value(localDate.toString()));
+
+    }
+
+    @Test
+    @DisplayName("해당 날짜의 첫번째 일기 글을 새로 받아온 일기글로 수정할 때 date 형식을 맞추지 않을 경우 error 가 발생한다")
+    public void updateOldestDiary_typeMissMatch() throws Exception {
+        //given
+        String targetDate = "05-20";
+        String text = "와재밌다";
+
+        UpdateOldestDto.Request request = UpdateOldestDto.Request.builder()
+                .text(text)
+                .build();
+
+        String json = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(put(("/diary/oldest/{date}"), targetDate)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.errorCode").value(TYPE_MISS_MATCH.name()))
+                .andExpect(jsonPath("$.errorMessage").value(TYPE_MISS_MATCH.getDescription()))
+                .andExpect(jsonPath("$.data").isEmpty());
+
+    }
+
+    @Test
+    @DisplayName("해당 날짜의 첫번째 일기 글을 새로 받아온 일기글로 수정할 때 text 필드가 null 인 경우 error 가 발생한다")
+    public void updateOldestDiary_textNull() throws Exception {
+        //given
+        LocalDate localDate = LocalDate.of(2022, 05, 23);
+
+        UpdateOldestDto.Request request = UpdateOldestDto.Request.builder()
+                .text(null)
+                .build();
+
+        String json = objectMapper.writeValueAsString(request);
+
+        //when //then
+        mockMvc.perform(put(("/diary/oldest/{date}"), localDate)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(BAD_REQUEST.value()))
+                .andExpect(jsonPath("$.status").value(BAD_REQUEST.name()))
+                .andExpect(jsonPath("$.errorCode").value(INVALID_REQUEST.name()))
+                .andExpect(jsonPath("$.errorMessage").value("text 필드는 null이 허용되지 않습니다."))
+                .andExpect(jsonPath("$.data").isEmpty());
 
     }
 

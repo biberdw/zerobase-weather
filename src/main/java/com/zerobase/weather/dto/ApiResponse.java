@@ -12,12 +12,13 @@ public class ApiResponse<T> {
     private String errorMessage;
     private T data;
 
-    private ApiResponse(HttpStatus status, ErrorCode errorCode, T data) {
+    private ApiResponse(HttpStatus status, ErrorCode errorCode, T data, String message) {
         this.code = status.value();
         this.status = status;
         this.errorCode = errorCode;
 
-        if (errorCode == null) this.errorMessage = null;
+        if (errorCode != null && message != null) this.errorMessage = message;
+        else if (errorCode == null && message == null) this.errorMessage = null;
         else this.errorMessage = errorCode.getDescription();
 
         this.data = data;
@@ -30,8 +31,8 @@ public class ApiResponse<T> {
      * errorMessage : {errorMessage}<br>
      * data : null
      */
-    public static <T> ApiResponse<T> of(HttpStatus status, ErrorCode errorCode, T data) {
-        return new ApiResponse<>(status, errorCode, data);
+    public static <T> ApiResponse<T> of(HttpStatus status, ErrorCode errorCode, T data, String message) {
+        return new ApiResponse<>(status, errorCode, data, message);
     }
 
     /**
@@ -41,8 +42,8 @@ public class ApiResponse<T> {
      * errorMessage : null<br>
      * data : {data}
      */
-    public static <T> ApiResponse<T> of(HttpStatus status, T data) {
-        return of(status, null, data);
+    public static <T> ApiResponse<T> of(HttpStatus status, T data, String message) {
+        return of(status, null, data, message);
     }
 
     /**
@@ -53,7 +54,7 @@ public class ApiResponse<T> {
      * data : {data}
      */
     public static <T> ApiResponse<T> ok(T data) {
-        return of(HttpStatus.OK, data);
+        return of(HttpStatus.OK, data, null);
     }
 
     /**
