@@ -3,6 +3,7 @@ package com.zerobase.weather.service.diary;
 import com.zerobase.weather.domain.dateweather.DateWeather;
 import com.zerobase.weather.domain.diary.Diary;
 import com.zerobase.weather.dto.diary.DiaryDto;
+import com.zerobase.weather.exception.ArgumentException;
 import com.zerobase.weather.repository.diary.DiaryRepository;
 import com.zerobase.weather.service.dateweather.DateWeatherDbOrApiFetcher;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+
+import static com.zerobase.weather.type.ErrorCode.FUTURE_DATE_NOT_ALLOWED;
 
 @Service
 @Transactional(readOnly = true)
@@ -21,6 +24,9 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Transactional
     public DiaryDto createDiary(LocalDate date, String text) {
+        //미래의 일기를 저장하려고 할때 예외 반환
+        if (date.isAfter(LocalDate.now())) throw new ArgumentException(FUTURE_DATE_NOT_ALLOWED);
+
         //날씨 데이터 가져오기 (API 에서 가져오기 or DB 에서 가져오기 )
         DateWeather dateWeather = fetcher.fetch(date);
 

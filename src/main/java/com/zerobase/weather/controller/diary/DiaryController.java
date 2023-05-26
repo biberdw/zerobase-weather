@@ -22,7 +22,6 @@ public class DiaryController {
     @PostMapping("/{date}")
     public ApiResponse<Void> createDiary(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                          @RequestBody String text) {
-        if (date.isAfter(LocalDate.now())) throw new ArgumentException(FUTURE_DATE_NOT_ALLOWED);
         diaryService.createDiary(date, text);
         return ApiResponse.ok();
     }
