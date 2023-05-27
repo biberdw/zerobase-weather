@@ -12,6 +12,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import static com.zerobase.weather.type.ErrorCode.*;
 import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 @RestControllerAdvice
@@ -45,6 +46,18 @@ public class GlobalExceptionHandler {
         return ApiResponse.of(
                 BAD_REQUEST,
                 e.getErrorCode(),
+                null,
+                null
+        );
+    }
+
+    @ResponseStatus(INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(Exception.class)
+    public ApiResponse<Object> exception(Exception e){
+        log.error("Exception : ",e);
+        return ApiResponse.of(
+                INTERNAL_SERVER_ERROR,
+                ErrorCode.INTERNAL_SERVER_ERROR,
                 null,
                 null
         );

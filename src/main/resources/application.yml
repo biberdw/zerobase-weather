@@ -29,3 +29,6 @@ openweathermap:
 schedules:
   cron:
     dateweather: 0 0 1 * * *
+
+logging:
+  config: classpath:logback-spring.xml
