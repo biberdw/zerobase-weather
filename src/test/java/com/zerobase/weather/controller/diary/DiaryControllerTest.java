@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zerobase.weather.dto.diary.DiaryDto;
 import com.zerobase.weather.dto.diary.UpdateOldestDto;
 import com.zerobase.weather.service.diary.DiaryService;
-import com.zerobase.weather.type.ErrorCode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static com.zerobase.weather.type.ErrorCode.*;
+import static com.zerobase.weather.type.ErrorCode.INVALID_REQUEST;
 import static com.zerobase.weather.type.ErrorCode.TYPE_MISS_MATCH;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -155,13 +154,13 @@ class DiaryControllerTest {
 
         List<DiaryDto> diaries = Arrays.asList(diary1, diary2, diary3);
 
-        given(diaryService.readDiariesBetween(any(),any()))
+        given(diaryService.readDiariesBetween(any(), any()))
                 .willReturn(diaries);
 
         //when //then
         mockMvc.perform(get(("/diary"))
-                        .queryParam("startDate","2022-05-23")
-                        .queryParam("endDate","2022-05-25")
+                        .queryParam("startDate", "2022-05-23")
+                        .queryParam("endDate", "2022-05-25")
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
@@ -185,10 +184,10 @@ class DiaryControllerTest {
     public Collection<DynamicTest> readDiaries_between_typeMissMatch() throws Exception {
 
         return Arrays.asList(
-                DynamicTest.dynamicTest("시작날짜의 포맷이 일치하지 않은 경우 예외 발생", () ->{
+                DynamicTest.dynamicTest("시작날짜의 포맷이 일치하지 않은 경우 예외 발생", () -> {
                     mockMvc.perform(get(("/diary"))
-                                    .queryParam("startDate","05-23")
-                                    .queryParam("endDate","2022-05-25")
+                                    .queryParam("startDate", "05-23")
+                                    .queryParam("endDate", "2022-05-25")
                             )
                             .andDo(print())
                             .andExpect(status().isBadRequest())
@@ -198,10 +197,10 @@ class DiaryControllerTest {
                             .andExpect(jsonPath("$.errorMessage").value(TYPE_MISS_MATCH.getDescription()))
                             .andExpect(jsonPath("$.data").isEmpty());
                 }),
-                DynamicTest.dynamicTest("종료날짜의 포맷이 일치하지 않은 경우 예외 발생", () ->{
+                DynamicTest.dynamicTest("종료날짜의 포맷이 일치하지 않은 경우 예외 발생", () -> {
                     mockMvc.perform(get(("/diary"))
-                                    .queryParam("startDate","2022-05-23")
-                                    .queryParam("endDate","05-25")
+                                    .queryParam("startDate", "2022-05-23")
+                                    .queryParam("endDate", "05-25")
                             )
                             .andDo(print())
                             .andExpect(status().isBadRequest())
@@ -231,7 +230,7 @@ class DiaryControllerTest {
 
         DiaryDto diary1 = createDiaryDtoBy(localDate, "맑음", "icon1", 222.1, text);
 
-        given(diaryService.updateOldestTextBy(any(),any()))
+        given(diaryService.updateOldestTextBy(any(), any()))
                 .willReturn(diary1);
 
         //when //then

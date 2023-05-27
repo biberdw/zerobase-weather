@@ -36,7 +36,7 @@ public class Diary {
         this.date = date;
     }
 
-    public void updateText(String text){
+    public void updateText(String text) {
         this.text = text;
     }
 }

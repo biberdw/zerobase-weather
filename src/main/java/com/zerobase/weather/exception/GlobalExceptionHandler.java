@@ -3,15 +3,15 @@ package com.zerobase.weather.exception;
 import com.zerobase.weather.dto.ApiResponse;
 import com.zerobase.weather.type.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import static com.zerobase.weather.type.ErrorCode.*;
-import static org.springframework.http.HttpStatus.*;
+import static com.zerobase.weather.type.ErrorCode.INVALID_REQUEST;
+import static com.zerobase.weather.type.ErrorCode.TYPE_MISS_MATCH;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Slf4j
@@ -53,8 +53,8 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
-    public ApiResponse<Object> exception(Exception e){
-        log.error("Exception : ",e);
+    public ApiResponse<Object> exception(Exception e) {
+        log.error("Exception : ", e);
         return ApiResponse.of(
                 INTERNAL_SERVER_ERROR,
                 ErrorCode.INTERNAL_SERVER_ERROR,

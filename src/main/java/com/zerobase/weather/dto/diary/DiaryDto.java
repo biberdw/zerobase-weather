@@ -29,7 +29,7 @@ public class DiaryDto {
         this.date = date;
     }
 
-    public static DiaryDto fromEntity(Diary diary){
+    public static DiaryDto fromEntity(Diary diary) {
         return DiaryDto.builder()
                 .id(diary.getId())
                 .weather(diary.getWeather())

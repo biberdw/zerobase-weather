@@ -15,7 +15,7 @@ public class DateWeatherDbOrApiFetcher {
     private final DateWeatherClient dateWeatherClient;
     private final DateWeatherRepository dateWeatherRepository;
 
-    public DateWeather fetch(LocalDate date){
+    public DateWeather fetch(LocalDate date) {
         return dateWeatherRepository.findByDate(date).orElseGet(() -> dateWeatherClient.getDataFromApi(date));
     }
 }

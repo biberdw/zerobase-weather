@@ -14,7 +14,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig {
     @Bean
-    public Docket api(){
+    public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.zerobase.weather"))
@@ -22,7 +22,7 @@ public class SwaggerConfig {
                 .build().apiInfo(apiInfo());
     }
 
-    private ApiInfo apiInfo(){
+    private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("날씨 일기 프로젝트 :)")
                 .description("날씨 일기를 CRUD 할 수 있는 백엔드 API 입니다")

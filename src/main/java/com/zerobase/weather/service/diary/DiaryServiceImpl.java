@@ -6,7 +6,6 @@ import com.zerobase.weather.dto.diary.DiaryDto;
 import com.zerobase.weather.exception.ArgumentException;
 import com.zerobase.weather.repository.diary.DiaryRepository;
 import com.zerobase.weather.service.dateweather.DateWeatherDbOrApiFetcher;
-import com.zerobase.weather.type.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.zerobase.weather.type.ErrorCode.*;
-import static com.zerobase.weather.type.ErrorCode.FUTURE_DATE_NOT_ALLOWED;
-import static com.zerobase.weather.type.ErrorCode.INVALID_DATE_RANGE;
 
 @Service
 @Transactional(readOnly = true)
@@ -96,7 +93,7 @@ public class DiaryServiceImpl implements DiaryService {
         if (date.isAfter(LocalDate.now())) throw new ArgumentException(FUTURE_DATE_NOT_ALLOWED);
     }
 
-    private static void throwIfInvalidDateRange(LocalDate startDate, LocalDate endDate){
-        if(startDate.isAfter(endDate)) throw new ArgumentException(INVALID_DATE_RANGE);
+    private static void throwIfInvalidDateRange(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) throw new ArgumentException(INVALID_DATE_RANGE);
     }
 }
